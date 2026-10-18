@@ -128,34 +128,34 @@ export default async function CenterLanding({ params }: Props) {
             <p className="mt-8 text-[var(--muted)]">Pronto publicaremos nuestros servicios.</p>
           )}
 
-          <div className="mt-10 space-y-10">
+          <div className="mt-10 divide-y divide-[var(--line)] border-y border-[var(--line)]">
             {groups.map((g) => (
-              <div key={g.id ?? 'otros'}>
+              <div
+                key={g.id ?? 'otros'}
+                className={`gap-x-10 gap-y-4 py-8 ${showHeadings ? 'md:grid md:grid-cols-[200px_1fr]' : ''}`}
+              >
                 {showHeadings && (
-                  <h3 className="mb-4 text-sm font-semibold uppercase tracking-[.15em] text-[var(--accent)]">
+                  <h3 className="mb-4 font-display text-2xl text-[var(--accent)] md:mb-0 md:pt-4">
                     {g.name}
                   </h3>
                 )}
-                <ul className="grid gap-4 md:grid-cols-2">
+                <ul className="space-y-3">
                   {g.services.map((s) => (
-                      <li key={s.id} className="card flex items-start justify-between gap-4 p-5">
-                        <div>
-                          <p className="font-semibold">{s.name}</p>
-                          {s.description && (
-                            <p className="mt-1 text-sm text-[var(--muted)]">{s.description}</p>
-                          )}
-                          <p className="mt-2 text-xs text-[var(--muted)]">{fmtDuration(s.duration_min)}</p>
-                        </div>
-                        <div className="flex shrink-0 flex-col items-end gap-3">
-                          <span className="font-semibold">{formatCLP(s.price)}</span>
-                          <Link
-                            href={`${reservar}?servicio=${s.id}`}
-                            className="text-sm font-semibold text-[var(--accent)] hover:underline"
-                          >
-                            Reservar →
-                          </Link>
-                        </div>
-                      </li>
+                    <li key={s.id} className="card flex items-center justify-between gap-5 p-5">
+                      <div className="min-w-0">
+                        <p className="font-semibold">{s.name}</p>
+                        {s.description && (
+                          <p className="mt-1 text-sm text-[var(--muted)]">{s.description}</p>
+                        )}
+                        <p className="mt-2 text-xs text-[var(--muted)]">{fmtDuration(s.duration_min)}</p>
+                      </div>
+                      <div className="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center sm:gap-5">
+                        <span className="text-lg font-semibold">{formatCLP(s.price)}</span>
+                        <Link href={`${reservar}?servicio=${s.id}`} className="btn btn-accent !px-4 !py-2 !text-sm">
+                          Reservar
+                        </Link>
+                      </div>
+                    </li>
                   ))}
                 </ul>
               </div>
