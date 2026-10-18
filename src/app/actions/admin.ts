@@ -75,7 +75,7 @@ export async function updateCenter(_p: FormState, fd: FormData): Promise<FormSta
 // ---------------------------------------------------------------- Colores
 
 const ThemeSchema = z.object({
-  palette: z.enum([...PALETTES.map((p) => p.id), CUSTOM_ID] as [string, ...string[]]),
+  palette: z.string().refine((v) => v === CUSTOM_ID || PALETTES.some((p) => p.id === v)),
   accent_color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
 });
 
