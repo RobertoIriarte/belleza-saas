@@ -1,3 +1,4 @@
+import { accentVars } from '@/lib/style';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
@@ -28,7 +29,7 @@ export default async function CenterLanding({ params }: Props) {
   const reservar = `/c/${center.slug}/reservar`;
 
   return (
-    <div style={{ ['--accent' as string]: center.accent_color }}>
+    <div style={accentVars(center.accent_color)}>
       {/* Navegación */}
       <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--paper)]/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">

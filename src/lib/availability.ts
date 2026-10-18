@@ -108,7 +108,7 @@ export async function getAvailableSlots(
   if (professionalId) q = q.eq('professional_id', professionalId);
   const { data: links } = await q;
 
-  const profIds: string[] = [...new Set((links ?? []).map((l) => l.professional_id as string))];
+  const profIds: string[] = [...new Set((links ?? []).map((l: { professional_id: string }) => l.professional_id))];
   if (profIds.length === 0) return [];
 
   const { data: hours } = await supabase
@@ -123,7 +123,7 @@ export async function getAvailableSlots(
 
   const result: Slot[] = [];
   for (const pid of profIds) {
-    const myHours = (hours ?? []).filter((h) => h.professional_id === pid);
+    const myHours = (hours ?? []).filter((h: { professional_id: string }) => h.professional_id === pid);
     if (myHours.length === 0) continue;
 
     const { data: busy } = await supabase.rpc('busy_ranges', {

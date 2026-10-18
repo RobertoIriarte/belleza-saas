@@ -34,7 +34,7 @@ export default async function ProfesionalPage({ params }: Props) {
     supabase.from('working_hours').select('*').eq('professional_id', id).order('start_time'),
   ]);
 
-  const mine = new Set((links ?? []).map((l) => l.service_id as string));
+  const mine = new Set((links ?? []).map((l: { service_id: string }) => l.service_id));
   const hrs = (hours ?? []) as WorkingHour[];
 
   return (

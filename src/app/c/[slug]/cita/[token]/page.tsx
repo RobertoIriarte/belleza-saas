@@ -1,3 +1,4 @@
+import { accentVars } from '@/lib/style';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -39,7 +40,7 @@ export default async function CitaPage({ params }: Props) {
   return (
     <main
       className="mx-auto flex min-h-screen max-w-lg flex-col justify-center px-5 py-12"
-      style={{ ['--accent' as string]: center.accent_color }}
+      style={accentVars(center.accent_color)}
     >
       <div className="card p-8">
         <div
