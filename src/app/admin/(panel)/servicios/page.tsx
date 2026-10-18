@@ -10,6 +10,7 @@ import {
   toggleService,
 } from '@/app/actions/admin';
 import StatefulForm from '@/components/StatefulForm';
+import SubmitButton from '@/components/SubmitButton';
 import ConfirmButton from '@/components/ConfirmButton';
 import { fmtDuration } from '@/lib/format';
 import { groupServices } from '@/lib/categories';
@@ -63,7 +64,7 @@ export default async function ServiciosPage() {
                       aria-label="Nombre de la categoría"
                       className="input !w-48 !py-1.5 font-semibold"
                     />
-                    <button className="btn btn-ghost !px-3 !py-1.5 !text-xs">Renombrar</button>
+                    <SubmitButton className="btn btn-ghost !px-3 !py-1.5 !text-xs">Renombrar</SubmitButton>
                   </form>
                 ) : (
                   <h2 className="text-sm font-semibold uppercase tracking-[.15em] text-[var(--muted)]">
@@ -77,14 +78,14 @@ export default async function ServiciosPage() {
                       <form action={moveCategory}>
                         <input type="hidden" name="id" value={g.id} />
                         <input type="hidden" name="dir" value="up" />
-                        <button aria-label="Subir categoría" className="btn btn-ghost !px-3 !py-1.5 !text-xs">↑</button>
+                        <SubmitButton aria-label="Subir categoría" className="btn btn-ghost !px-3 !py-1.5 !text-xs">↑</SubmitButton>
                       </form>
                     )}
                     {gi < categories.length - 1 && (
                       <form action={moveCategory}>
                         <input type="hidden" name="id" value={g.id} />
                         <input type="hidden" name="dir" value="down" />
-                        <button aria-label="Bajar categoría" className="btn btn-ghost !px-3 !py-1.5 !text-xs">↓</button>
+                        <SubmitButton aria-label="Bajar categoría" className="btn btn-ghost !px-3 !py-1.5 !text-xs">↓</SubmitButton>
                       </form>
                     )}
                     <form action={deleteCategory}>
@@ -120,11 +121,11 @@ export default async function ServiciosPage() {
                         <form action={toggleService}>
                           <input type="hidden" name="id" value={s.id} />
                           <input type="hidden" name="active" value={String(s.active)} />
-                          <button className="btn btn-ghost !px-3 !py-1.5 !text-xs">{s.active ? 'Ocultar' : 'Mostrar'}</button>
+                          <SubmitButton className="btn btn-ghost !px-3 !py-1.5 !text-xs">{s.active ? 'Ocultar' : 'Mostrar'}</SubmitButton>
                         </form>
                         <form action={deleteService}>
                           <input type="hidden" name="id" value={s.id} />
-                          <button className="btn btn-ghost !px-3 !py-1.5 !text-xs !text-red-700">Eliminar</button>
+                          <SubmitButton className="btn btn-ghost !px-3 !py-1.5 !text-xs !text-red-700">Eliminar</SubmitButton>
                         </form>
                       </div>
                     </div>
@@ -142,7 +143,7 @@ export default async function ServiciosPage() {
                             <option key={c.id} value={c.id}>{c.name}</option>
                           ))}
                         </select>
-                        <button className="btn btn-ghost !px-3 !py-1 !text-xs">Mover</button>
+                        <SubmitButton className="btn btn-ghost !px-3 !py-1 !text-xs">Mover</SubmitButton>
                       </form>
                     )}
                   </li>

@@ -37,3 +37,15 @@ export function createAdminClient() {
     { auth: { persistSession: false, autoRefreshToken: false } },
   );
 }
+
+/**
+ * Cliente anónimo sin cookies, para leer datos públicos (la landing de cada centro).
+ * Al no tocar cookies, Next puede guardar la página ya generada y servirla al instante.
+ */
+export function createPublicClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { persistSession: false, autoRefreshToken: false } },
+  );
+}

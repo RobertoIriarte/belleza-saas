@@ -12,6 +12,9 @@ import Gallery from '@/components/Gallery';
 import ServiceCatalog from '@/components/ServiceCatalog';
 import Stars from '@/components/Stars';
 
+// La página se guarda en caché y se regenera sola cada minuto (y al instante cuando el dueño edita algo)
+export const revalidate = 60;
+
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

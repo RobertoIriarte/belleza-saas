@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { createClient } from '@/lib/supabase/server';
+import { createPublicClient } from '@/lib/supabase/server';
 import type { HourRow } from '@/lib/hours';
 import { GALLERY_MAX, TESTIMONIALS_MAX, type Testimonial, type Center, type GalleryItem, type Professional, type Service, type ServiceCategory } from '@/lib/types';
 
@@ -18,7 +18,7 @@ export type CenterBundle = {
 
 /** Carga todo lo público de un centro. `cache` evita repetir consultas en la misma request. */
 export const getCenterBundle = cache(async (slug: string): Promise<CenterBundle | null> => {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
 
   const { data: center } = await supabase.from('centers').select('*').eq('slug', slug).single();
   if (!center) return null;

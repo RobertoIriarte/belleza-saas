@@ -1,6 +1,7 @@
 import { requireCenter } from '@/lib/admin';
 import { createTestimonial, deleteTestimonial, toggleTestimonial } from '@/app/actions/admin';
 import StatefulForm from '@/components/StatefulForm';
+import SubmitButton from '@/components/SubmitButton';
 import ConfirmButton from '@/components/ConfirmButton';
 import Stars from '@/components/Stars';
 import { TESTIMONIALS_MAX, type Testimonial } from '@/lib/types';
@@ -43,7 +44,7 @@ export default async function TestimoniosPage() {
                   <form action={toggleTestimonial}>
                     <input type="hidden" name="id" value={t.id} />
                     <input type="hidden" name="active" value={String(t.active)} />
-                    <button className="btn btn-ghost !px-3 !py-1.5 !text-xs">{t.active ? 'Ocultar' : 'Mostrar'}</button>
+                    <SubmitButton className="btn btn-ghost !px-3 !py-1.5 !text-xs">{t.active ? 'Ocultar' : 'Mostrar'}</SubmitButton>
                   </form>
                   <form action={deleteTestimonial}>
                     <input type="hidden" name="id" value={t.id} />

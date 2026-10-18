@@ -7,6 +7,9 @@ import { requireCenter, requireUser } from '@/lib/admin';
 import { CUSTOM_ID, PALETTES } from '@/lib/themes';
 import { BUSINESS_TYPES } from '@/lib/business';
 
+/** Las landings se guardan en caché: al cambiar datos se regeneran todas las páginas de centros. */
+const refreshSite = () => revalidatePath('/c/[slug]', 'page');
+
 const str = (max = 200) => z.string().trim().max(max);
 const optional = (max = 200) =>
   str(max).transform((v) => (v === '' ? null : v)).nullable().optional();
@@ -122,6 +125,7 @@ export async function createService(_p: FormState, fd: FormData): Promise<FormSt
   const { error } = await supabase.from('services').insert({ ...parsed.data, center_id: center.id });
   if (error) return { error: 'No se pudo crear el servicio.' };
   revalidatePath('/admin/servicios');
+  refreshSite();
   return { ok: true };
 }
 
@@ -142,6 +146,7 @@ export async function setServiceCategory(fd: FormData) {
   }
   await supabase.from('services').update({ category_id: categoryId }).eq('id', id).eq('center_id', center.id);
   revalidatePath('/admin/servicios');
+  refreshSite();
   revalidatePath(`/c/${center.slug}`);
 }
 
@@ -151,6 +156,7 @@ export async function toggleService(fd: FormData) {
   const active = fd.get('active') === 'true';
   await supabase.from('services').update({ active: !active }).eq('id', id);
   revalidatePath('/admin/servicios');
+  refreshSite();
 }
 
 export async function deleteService(fd: FormData) {
@@ -160,6 +166,7 @@ export async function deleteService(fd: FormData) {
   const { error } = await supabase.from('services').delete().eq('id', id);
   if (error) await supabase.from('services').update({ active: false }).eq('id', id);
   revalidatePath('/admin/servicios');
+  refreshSite();
 }
 
 // -------------------------------------------------------------- Categorías
@@ -191,6 +198,7 @@ export async function createCategory(_p: FormState, fd: FormData): Promise<FormS
     };
   }
   revalidatePath('/admin/servicios');
+  refreshSite();
   revalidatePath(`/c/${center.slug}`);
   return { ok: true };
 }
@@ -206,6 +214,7 @@ export async function renameCategory(fd: FormData) {
     .eq('id', id)
     .eq('center_id', center.id);
   revalidatePath('/admin/servicios');
+  refreshSite();
   revalidatePath(`/c/${center.slug}`);
 }
 
@@ -232,6 +241,7 @@ export async function moveCategory(fd: FormData) {
     ),
   );
   revalidatePath('/admin/servicios');
+  refreshSite();
   revalidatePath(`/c/${center.slug}`);
 }
 
@@ -241,6 +251,7 @@ export async function deleteCategory(fd: FormData) {
   const id = z.string().uuid().parse(fd.get('id'));
   await supabase.from('service_categories').delete().eq('id', id).eq('center_id', center.id);
   revalidatePath('/admin/servicios');
+  refreshSite();
   revalidatePath(`/c/${center.slug}`);
 }
 
@@ -330,6 +341,7 @@ export async function updateProfessional(_p: FormState, fd: FormData): Promise<F
   const { error } = await supabase.from('professionals').update(parsed.data).eq('id', id);
   if (error) return { error: 'No se pudo guardar.' };
   revalidatePath('/admin/equipo');
+  refreshSite();
   return { ok: true };
 }
 
@@ -339,6 +351,7 @@ export async function toggleProfessional(fd: FormData) {
   const active = fd.get('active') === 'true';
   await supabase.from('professionals').update({ active: !active }).eq('id', id);
   revalidatePath('/admin/equipo');
+  refreshSite();
 }
 
 export async function saveProfessionalServices(fd: FormData) {
@@ -353,6 +366,7 @@ export async function saveProfessionalServices(fd: FormData) {
       .insert(serviceIds.map((service_id) => ({ professional_id: id, service_id })));
   }
   revalidatePath(`/admin/equipo/${id}`);
+  refreshSite();
 }
 
 const Hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
@@ -377,6 +391,7 @@ export async function saveWorkingHours(fd: FormData) {
   await supabase.from('working_hours').delete().eq('professional_id', id);
   if (rows.length) await supabase.from('working_hours').insert(rows);
   revalidatePath(`/admin/equipo/${id}`);
+  refreshSite();
 }
 
 // ------------------------------------------------------------------ Citas

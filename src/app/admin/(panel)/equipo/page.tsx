@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { requireCenter } from '@/lib/admin';
 import { createProfessional, toggleProfessional } from '@/app/actions/admin';
 import StatefulForm from '@/components/StatefulForm';
+import SubmitButton from '@/components/SubmitButton';
 import PhotoPicker from '@/components/PhotoPicker';
 import type { Professional } from '@/lib/types';
 
@@ -49,7 +50,7 @@ export default async function EquipoPage() {
                 <form action={toggleProfessional}>
                   <input type="hidden" name="id" value={p.id} />
                   <input type="hidden" name="active" value={String(p.active)} />
-                  <button className="btn btn-ghost !px-3 !py-1.5 !text-xs">{p.active ? 'Desactivar' : 'Activar'}</button>
+                  <SubmitButton className="btn btn-ghost !px-3 !py-1.5 !text-xs">{p.active ? 'Desactivar' : 'Activar'}</SubmitButton>
                 </form>
               </div>
             </li>
