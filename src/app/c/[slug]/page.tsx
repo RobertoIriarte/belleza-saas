@@ -38,6 +38,7 @@ export default async function CenterLanding({ params }: Props) {
   const schedule = summarizeHours(hours);
 
   const business = businessOf(center.business_type);
+  const mapQuery = [center.address, center.city].filter(Boolean).join(', ');
   const groups = groupServices(services, categories);
   const showHeadings = categories.length > 0;
   const reservar = `/c/${center.slug}/reservar`;
@@ -161,6 +162,36 @@ export default async function CenterLanding({ params }: Props) {
         </div>
       </section>
 
+      {/* Cómo funciona */}
+      <section id="como-funciona" className="mx-auto max-w-6xl px-5 py-16">
+        <h2 className="font-display text-4xl">Reservar es muy fácil</h2>
+        <p className="mt-2 text-[var(--muted)]">Tres pasos y tu hora queda agendada.</p>
+        <ol className="relative mt-10 grid gap-5 md:grid-cols-3">
+          {[
+            { t: 'Elige tu servicio', d: 'Revisa nuestro catálogo y escoge lo que necesitas.' },
+            { t: 'Escoge día y hora', d: 'Ves solo los horarios realmente disponibles, con el profesional que prefieras.' },
+            { t: 'Confirma y listo', d: 'Recibes un enlace para ver o cancelar tu hora cuando quieras.' },
+          ].map((step, i) => (
+            <li key={step.t} className="card relative p-6">
+              <span className="font-display text-6xl leading-none text-[var(--accent)]/25">{i + 1}</span>
+              <h3 className="mt-3 text-lg font-semibold">{step.t}</h3>
+              <p className="mt-1 text-sm leading-relaxed text-[var(--muted)]">{step.d}</p>
+              {i < 2 && (
+                <span
+                  aria-hidden="true"
+                  className="absolute -right-3.5 top-1/2 z-10 hidden h-7 w-7 -translate-y-1/2 place-items-center rounded-full bg-[var(--accent)] text-white md:grid"
+                >
+                  →
+                </span>
+              )}
+            </li>
+          ))}
+        </ol>
+        <div className="mt-8">
+          <Link href={reservar} className="btn btn-accent">Reservar ahora</Link>
+        </div>
+      </section>
+
       {/* Galería de trabajos */}
       {gallery.length > 0 && (
         <section id="trabajos" className="mx-auto max-w-6xl px-5 py-16">
@@ -239,6 +270,36 @@ export default async function CenterLanding({ params }: Props) {
                 </li>
               ))}
             </ul>
+          </div>
+        </section>
+      )}
+
+      {/* Ubicación */}
+      {center.address && (
+        <section id="ubicacion" className="mx-auto max-w-6xl px-5 py-16">
+          <div className="grid overflow-hidden rounded-[2rem] border border-[var(--line)] bg-white md:grid-cols-[1fr_1.4fr]">
+            <div className="flex flex-col justify-center p-8 md:p-10">
+              <h2 className="font-display text-4xl">Dónde estamos</h2>
+              <p className="mt-4 text-lg">
+                {center.address}
+                {center.city ? `, ${center.city}` : ''}
+              </p>
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapQuery)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-accent mt-6 self-start"
+              >
+                Cómo llegar
+              </a>
+            </div>
+            <iframe
+              title={`Mapa de ${center.name}`}
+              src={`https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="h-72 w-full border-0 md:h-full md:min-h-80"
+            />
           </div>
         </section>
       )}
