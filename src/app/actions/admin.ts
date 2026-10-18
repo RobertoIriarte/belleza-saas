@@ -244,6 +244,45 @@ export async function deleteCategory(fd: FormData) {
   revalidatePath(`/c/${center.slug}`);
 }
 
+// ------------------------------------------------------------ Testimonios
+
+const TestimonialSchema = z.object({
+  author_name: str(80).min(1, 'Ingresa el nombre del cliente'),
+  body: str(500).min(5, 'Escribe el testimonio'),
+  rating: z.coerce.number().int().min(1).max(5),
+});
+
+export async function createTestimonial(_p: FormState, fd: FormData): Promise<FormState> {
+  const { supabase, center } = await requireCenter();
+  const parsed = TestimonialSchema.safeParse(Object.fromEntries(fd));
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+
+  const { error } = await supabase.from('testimonials').insert({ ...parsed.data, center_id: center.id });
+  if (error) {
+    return { error: 'No se pudo guardar. ¿Ejecutaste la migración 007_testimonials.sql en Supabase?' };
+  }
+  revalidatePath('/admin/testimonios');
+  revalidatePath(`/c/${center.slug}`);
+  return { ok: true };
+}
+
+export async function toggleTestimonial(fd: FormData) {
+  const { supabase, center } = await requireCenter();
+  const id = z.string().uuid().parse(fd.get('id'));
+  const active = fd.get('active') === 'true';
+  await supabase.from('testimonials').update({ active: !active }).eq('id', id).eq('center_id', center.id);
+  revalidatePath('/admin/testimonios');
+  revalidatePath(`/c/${center.slug}`);
+}
+
+export async function deleteTestimonial(fd: FormData) {
+  const { supabase, center } = await requireCenter();
+  const id = z.string().uuid().parse(fd.get('id'));
+  await supabase.from('testimonials').delete().eq('id', id).eq('center_id', center.id);
+  revalidatePath('/admin/testimonios');
+  revalidatePath(`/c/${center.slug}`);
+}
+
 // ------------------------------------------------------------ Profesionales
 
 const ProSchema = z.object({

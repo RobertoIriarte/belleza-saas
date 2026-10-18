@@ -117,3 +117,16 @@ export function formatCLP(n: number) {
     maximumFractionDigits: 0,
   }).format(n);
 }
+
+export type Testimonial = {
+  id: string;
+  center_id: string;
+  author_name: string;
+  body: string;
+  rating: number;
+  active: boolean;
+  created_at: string;
+};
+
+/** Máximo de testimonios que se muestran en el sitio público */
+export const TESTIMONIALS_MAX = 9;

@@ -8,6 +8,7 @@ const nav = [
   { href: '/admin/servicios', label: 'Servicios' },
   { href: '/admin/equipo', label: 'Equipo' },
   { href: '/admin/galeria', label: 'Galería' },
+  { href: '/admin/testimonios', label: 'Testimonios' },
   { href: '/admin/ajustes', label: 'Ajustes' },
 ];
 

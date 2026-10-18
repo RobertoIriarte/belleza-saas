@@ -10,6 +10,7 @@ import { groupServices } from '@/lib/categories';
 import { businessOf } from '@/lib/business';
 import Gallery from '@/components/Gallery';
 import ServiceCatalog from '@/components/ServiceCatalog';
+import Stars from '@/components/Stars';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -27,7 +28,10 @@ export default async function CenterLanding({ params }: Props) {
   const { slug } = await params;
   const bundle = await getCenterBundle(slug);
   if (!bundle) notFound();
-  const { center, services, categories, professionals, hours, gallery } = bundle;
+  const { center, services, categories, professionals, hours, gallery, testimonials } = bundle;
+  const avgRating = testimonials.length
+    ? testimonials.reduce((sum, t) => sum + t.rating, 0) / testimonials.length
+    : 0;
   const schedule = summarizeHours(hours);
 
   const business = businessOf(center.business_type);
@@ -58,6 +62,9 @@ export default async function CenterLanding({ params }: Props) {
               <a href="#trabajos" className="hover:text-[var(--accent)]">Trabajos</a>
             )}
             <a href="#equipo" className="hover:text-[var(--accent)]">Equipo</a>
+            {testimonials.length > 0 && (
+              <a href="#testimonios" className="hover:text-[var(--accent)]">Opiniones</a>
+            )}
             <a href="#contacto" className="hover:text-[var(--accent)]">Contacto</a>
           </nav>
           <Link href={reservar} className="btn btn-accent !py-2">Reservar</Link>
@@ -185,6 +192,50 @@ export default async function CenterLanding({ params }: Props) {
                 </div>
               </article>
             ))}
+          </div>
+        </section>
+      )}
+
+      {/* Testimonios */}
+      {testimonials.length > 0 && (
+        <section id="testimonios" className="border-y border-[var(--line)] bg-[var(--soft)] py-16">
+          <div className="mx-auto max-w-6xl px-5">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h2 className="font-display text-4xl">Lo que dicen nuestros clientes</h2>
+                <p className="mt-2 text-[var(--muted)]">Opiniones de quienes ya se atendieron con nosotros.</p>
+              </div>
+              <div className="flex items-center gap-3 rounded-2xl bg-white px-5 py-3 shadow-sm">
+                <span className="font-display text-4xl leading-none">{avgRating.toFixed(1)}</span>
+                <div>
+                  <Stars value={avgRating} size={16} />
+                  <p className="mt-0.5 text-xs text-[var(--muted)]">
+                    {testimonials.length} {testimonials.length === 1 ? 'opinión' : 'opiniones'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <ul className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {testimonials.map((t) => (
+                <li key={t.id} className="card relative flex flex-col p-6">
+                  <span
+                    aria-hidden="true"
+                    className="font-display absolute right-5 top-2 text-7xl leading-none text-[var(--accent)]/15"
+                  >
+                    ”
+                  </span>
+                  <Stars value={t.rating} />
+                  <blockquote className="mt-4 flex-1 leading-relaxed">“{t.body}”</blockquote>
+                  <div className="mt-6 flex items-center gap-3 border-t border-[var(--line)] pt-4">
+                    <span className="grid h-10 w-10 place-items-center rounded-full bg-[var(--accent)]/10 font-display text-lg text-[var(--accent)]">
+                      {t.author_name.charAt(0).toUpperCase()}
+                    </span>
+                    <span className="text-sm font-semibold">{t.author_name}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
       )}

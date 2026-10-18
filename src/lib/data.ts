@@ -1,7 +1,7 @@
 import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import type { HourRow } from '@/lib/hours';
-import { GALLERY_MAX, type Center, type GalleryItem, type Professional, type Service, type ServiceCategory } from '@/lib/types';
+import { GALLERY_MAX, TESTIMONIALS_MAX, type Testimonial, type Center, type GalleryItem, type Professional, type Service, type ServiceCategory } from '@/lib/types';
 
 export type CenterBundle = {
   center: Center;
@@ -12,6 +12,8 @@ export type CenterBundle = {
   hours: HourRow[];
   /** Fotos de trabajos, las más recientes primero */
   gallery: GalleryItem[];
+  /** Testimonios activos, los más recientes primero */
+  testimonials: Testimonial[];
 };
 
 /** Carga todo lo público de un centro. `cache` evita repetir consultas en la misma request. */
@@ -21,7 +23,7 @@ export const getCenterBundle = cache(async (slug: string): Promise<CenterBundle 
   const { data: center } = await supabase.from('centers').select('*').eq('slug', slug).single();
   if (!center) return null;
 
-  const [{ data: services }, { data: professionals }, { data: links }, { data: galleryRows }, { data: categoryRows }] =
+  const [{ data: services }, { data: professionals }, { data: links }, { data: galleryRows }, { data: categoryRows }, { data: testimonialRows }] =
     await Promise.all([
     supabase
       .from('services')
@@ -52,6 +54,14 @@ export const getCenterBundle = cache(async (slug: string): Promise<CenterBundle 
       .eq('center_id', center.id)
       .order('sort_order')
       .order('name'),
+    // Si la migración de testimonios aún no se ejecutó, simplemente no hay testimonios
+    supabase
+      .from('testimonials')
+      .select('*')
+      .eq('center_id', center.id)
+      .eq('active', true)
+      .order('created_at', { ascending: false })
+      .limit(TESTIMONIALS_MAX),
   ]);
 
   const pros = (professionals ?? []) as Professional[];
@@ -84,5 +94,6 @@ export const getCenterBundle = cache(async (slug: string): Promise<CenterBundle 
     })),
     hours,
     gallery: (galleryRows ?? []) as GalleryItem[],
+    testimonials: (testimonialRows ?? []) as Testimonial[],
   };
 });
