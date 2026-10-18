@@ -258,6 +258,11 @@ export async function createProfessional(_p: FormState, fd: FormData): Promise<F
   const parsed = ProSchema.safeParse(Object.fromEntries(fd));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
+  // La foto debe estar en la carpeta de este centro en Storage
+  const photo = parsed.data.photo_url;
+  const prefix = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/center-media/${center.id}/`;
+  if (photo && !photo.startsWith(prefix)) return { error: 'Foto no válida' };
+
   const { data, error } = await supabase
     .from('professionals')
     .insert({ ...parsed.data, center_id: center.id })

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { requireCenter } from '@/lib/admin';
 import { createProfessional, toggleProfessional } from '@/app/actions/admin';
 import StatefulForm from '@/components/StatefulForm';
+import PhotoPicker from '@/components/PhotoPicker';
 import type { Professional } from '@/lib/types';
 
 export const metadata = { title: 'Equipo · Panel' };
@@ -28,9 +29,14 @@ export default async function EquipoPage() {
           {pros.map((p) => (
             <li key={p.id} className={`card flex items-center justify-between gap-4 p-4 ${p.active ? '' : 'opacity-55'}`}>
               <div className="flex items-center gap-4">
-                <span className="grid h-12 w-12 place-items-center rounded-full bg-[var(--accent)]/10 font-display text-xl text-[var(--accent)]">
-                  {p.name.charAt(0)}
-                </span>
+                {p.photo_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={p.photo_url} alt="" className="h-12 w-12 rounded-full object-cover" />
+                ) : (
+                  <span className="grid h-12 w-12 place-items-center rounded-full bg-[var(--accent)]/10 font-display text-xl text-[var(--accent)]">
+                    {p.name.charAt(0)}
+                  </span>
+                )}
                 <div>
                   <p className="font-semibold">{p.name}</p>
                   <p className="text-sm text-[var(--muted)]">{p.role ?? 'Profesional'}</p>
@@ -67,10 +73,7 @@ export default async function EquipoPage() {
               <label className="label" htmlFor="bio">Presentación</label>
               <textarea id="bio" name="bio" rows={2} className="input" />
             </div>
-            <div>
-              <label className="label" htmlFor="photo_url">URL de foto (opcional)</label>
-              <input id="photo_url" name="photo_url" type="url" className="input" placeholder="https://…" />
-            </div>
+            <PhotoPicker centerId={center.id} />
           </StatefulForm>
         </div>
       </aside>
