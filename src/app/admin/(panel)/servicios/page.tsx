@@ -12,6 +12,7 @@ import {
 import StatefulForm from '@/components/StatefulForm';
 import SubmitButton from '@/components/SubmitButton';
 import ConfirmButton from '@/components/ConfirmButton';
+import ImageUpload from '@/components/ImageUpload';
 import { fmtDuration } from '@/lib/format';
 import { groupServices } from '@/lib/categories';
 import { formatCLP, type Service, type ServiceCategory } from '@/lib/types';
@@ -100,6 +101,21 @@ export default async function ServiciosPage() {
                   </div>
                 )}
               </div>
+
+              {g.id && (
+                <div className="mb-4">
+                  <ImageUpload
+                    centerId={center.id}
+                    target="category"
+                    categoryId={g.id}
+                    currentUrl={g.imageUrl}
+                    label="Foto de la categoría"
+                    hint="Se muestra en la tarjeta de esta categoría en tu sitio."
+                    shape="wide"
+                    maxSide={1000}
+                  />
+                </div>
+              )}
 
               {g.services.length === 0 && (
                 <p className="rounded-xl border border-dashed border-[var(--line)] px-4 py-3 text-sm text-[var(--muted)]">

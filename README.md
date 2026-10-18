@@ -8,7 +8,7 @@ Cada centro tiene su sitio público en `/c/<url>` (servicios, equipo, reservas) 
 
 ## Puesta en marcha
 
-1. **Supabase**: crea un proyecto → *SQL Editor* → pega y ejecuta `supabase/schema.sql` y luego, en orden, `supabase/migrations/002_media.sql` (columnas de logo/portada y almacenamiento de imágenes), `supabase/migrations/003_gallery.sql` (galería de trabajos), `supabase/migrations/004_categories.sql` (categorías de servicios), `supabase/migrations/005_palette.sql` (paleta de colores), `supabase/migrations/006_business_type.sql` (tipo de negocio) y `supabase/migrations/007_testimonials.sql` (testimonios). Las migraciones son seguras de ejecutar más de una vez.
+1. **Supabase**: crea un proyecto → *SQL Editor* → pega y ejecuta `supabase/schema.sql` y luego, en orden, `supabase/migrations/002_media.sql` (columnas de logo/portada y almacenamiento de imágenes), `supabase/migrations/003_gallery.sql` (galería de trabajos), `supabase/migrations/004_categories.sql` (categorías de servicios), `supabase/migrations/005_palette.sql` (paleta de colores), `supabase/migrations/006_business_type.sql` (tipo de negocio), `supabase/migrations/007_testimonials.sql` (testimonios) y `supabase/migrations/008_category_images.sql` (fotos de categorías). Las migraciones son seguras de ejecutar más de una vez.
 2. En *Authentication → Providers* deja Email activo. Para probar rápido, desactiva "Confirm email".
 3. Copia `.env.example` a `.env.local` y completa las tres claves (*Project Settings → API*).
 4. ```bash

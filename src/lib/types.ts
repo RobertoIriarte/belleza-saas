@@ -40,6 +40,7 @@ export type ServiceCategory = {
   center_id: string;
   name: string;
   sort_order: number;
+  image_url?: string | null;
 };
 
 export type Professional = {

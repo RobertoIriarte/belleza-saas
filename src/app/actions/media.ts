@@ -6,9 +6,10 @@ import { requireCenter } from '@/lib/admin';
 import { GALLERY_MAX } from '@/lib/types';
 
 const Input = z.object({
-  target: z.enum(['cover', 'logo', 'professional']),
+  target: z.enum(['cover', 'logo', 'professional', 'category']),
   url: z.string().url().max(600).nullable(),
   professionalId: z.string().uuid().optional(),
+  categoryId: z.string().uuid().optional(),
 });
 
 type Result = { ok?: boolean; error?: string };
@@ -22,7 +23,7 @@ type Result = { ok?: boolean; error?: string };
 export async function saveImage(input: z.infer<typeof Input>): Promise<Result> {
   const parsed = Input.safeParse(input);
   if (!parsed.success) return { error: 'Datos inválidos' };
-  const { target, url, professionalId } = parsed.data;
+  const { target, url, professionalId, categoryId } = parsed.data;
 
   const { supabase, center } = await requireCenter();
 
@@ -50,6 +51,24 @@ export async function saveImage(input: z.infer<typeof Input>): Promise<Result> {
       .eq('id', professionalId)
       .eq('center_id', center.id);
     if (error) return { error: 'No se pudo guardar la foto' };
+  } else if (target === 'category') {
+    if (!categoryId) return { error: 'Falta la categoría' };
+    const { data: current } = await supabase
+      .from('service_categories')
+      .select('image_url')
+      .eq('id', categoryId)
+      .eq('center_id', center.id)
+      .single();
+    previousUrl = (current?.image_url as string | null | undefined) ?? null;
+
+    const { error } = await supabase
+      .from('service_categories')
+      .update({ image_url: url })
+      .eq('id', categoryId)
+      .eq('center_id', center.id);
+    if (error) {
+      return { error: 'No se pudo guardar. ¿Ejecutaste la migración 008_category_images.sql?' };
+    }
   } else {
     previousUrl = (target === 'cover' ? center.cover_url : center.logo_url) ?? null;
     const column = target === 'cover' ? 'cover_url' : 'logo_url';
@@ -73,6 +92,7 @@ export async function saveImage(input: z.infer<typeof Input>): Promise<Result> {
   revalidatePath(`/c/${center.slug}`);
   revalidatePath('/admin/ajustes');
   revalidatePath('/admin/equipo');
+  revalidatePath('/admin/servicios');
   if (professionalId) revalidatePath(`/admin/equipo/${professionalId}`);
   return { ok: true };
 }

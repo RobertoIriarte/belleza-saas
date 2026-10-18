@@ -8,8 +8,9 @@ import { shrinkImage } from '@/lib/image';
 
 type Props = {
   centerId: string;
-  target: 'cover' | 'logo' | 'professional';
+  target: 'cover' | 'logo' | 'professional' | 'category';
   professionalId?: string;
+  categoryId?: string;
   currentUrl: string | null;
   label: string;
   hint?: string;
@@ -29,6 +30,7 @@ export default function ImageUpload({
   centerId,
   target,
   professionalId,
+  categoryId,
   currentUrl,
   label,
   hint,
@@ -54,7 +56,7 @@ export default function ImageUpload({
       const blob = await shrinkImage(file, maxSide);
 
       // Nombre único por subida: evita que el navegador muestre la imagen antigua en caché
-      const path = `${centerId}/${target}${professionalId ? `-${professionalId}` : ''}-${Date.now()}.jpg`;
+      const path = `${centerId}/${target}${professionalId ? `-${professionalId}` : ''}${categoryId ? `-${categoryId}` : ''}-${Date.now()}.jpg`;
       const supabase = createClient();
       const { error: upErr } = await supabase.storage
         .from('center-media')
@@ -62,7 +64,7 @@ export default function ImageUpload({
       if (upErr) throw new Error('No se pudo subir la imagen. ¿Ejecutaste la migración 002_media.sql?');
 
       const publicUrl = supabase.storage.from('center-media').getPublicUrl(path).data.publicUrl;
-      const res = await saveImage({ target, url: publicUrl, professionalId });
+      const res = await saveImage({ target, url: publicUrl, professionalId, categoryId });
       if (res.error) throw new Error(res.error);
 
       setUrl(publicUrl);
@@ -78,7 +80,7 @@ export default function ImageUpload({
   async function onRemove() {
     setError(null);
     setBusy(true);
-    const res = await saveImage({ target, url: null, professionalId });
+    const res = await saveImage({ target, url: null, professionalId, categoryId });
     setBusy(false);
     if (res.error) {
       setError(res.error);

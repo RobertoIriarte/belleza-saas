@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { formatCLP, type Service } from '@/lib/types';
 import { fmtDuration } from '@/lib/format';
 import type { ServiceGroup } from '@/lib/categories';
@@ -70,6 +71,7 @@ export default function ServiceCatalog({
   }
 
   const current = open !== null ? groups[open] : null;
+  const anyImage = groups.some((g) => g.imageUrl);
 
   return (
     <>
@@ -81,8 +83,26 @@ export default function ServiceCatalog({
               <button
                 type="button"
                 onClick={() => setOpen(i)}
-                className="group flex h-full w-full flex-col justify-between rounded-[1.25rem] border border-[var(--line)] bg-white p-6 text-left transition hover:-translate-y-0.5 hover:border-[var(--accent)]/60 hover:shadow-md"
+                className="group flex h-full w-full flex-col overflow-hidden rounded-[1.25rem] border border-[var(--line)] bg-white text-left transition hover:-translate-y-0.5 hover:border-[var(--accent)]/60 hover:shadow-md"
               >
+                {anyImage && (
+                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-[var(--soft)]">
+                    {g.imageUrl ? (
+                      <Image
+                        src={g.imageUrl}
+                        alt=""
+                        fill
+                        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                        className="object-cover transition duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <span className="absolute inset-0 grid place-items-center font-display text-7xl text-[var(--accent)]/30">
+                        {g.name.charAt(0)}
+                      </span>
+                    )}
+                  </div>
+                )}
+                <div className="flex flex-1 flex-col justify-between p-6">
                 <div>
                   <h3 className="font-display text-2xl">{g.name}</h3>
                   <p className="mt-1 text-sm text-[var(--muted)]">
@@ -96,6 +116,7 @@ export default function ServiceCatalog({
                   <span className="font-semibold text-[var(--accent)] transition group-hover:translate-x-0.5">
                     Ver servicios →
                   </span>
+                </div>
                 </div>
               </button>
             </li>
@@ -115,6 +136,11 @@ export default function ServiceCatalog({
             className="flex max-h-[88vh] w-full max-w-2xl flex-col rounded-t-3xl bg-[var(--paper)] shadow-2xl sm:rounded-3xl"
             onClick={(e) => e.stopPropagation()}
           >
+            {current.imageUrl && (
+              <div className="relative aspect-[21/9] w-full shrink-0 overflow-hidden rounded-t-3xl">
+                <Image src={current.imageUrl} alt="" fill sizes="672px" className="object-cover" />
+              </div>
+            )}
             <div className="flex items-start justify-between gap-4 border-b border-[var(--line)] px-6 py-5">
               <div>
                 <h3 className="font-display text-3xl">{current.name}</h3>

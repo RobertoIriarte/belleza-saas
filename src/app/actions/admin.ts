@@ -249,7 +249,20 @@ export async function moveCategory(fd: FormData) {
 export async function deleteCategory(fd: FormData) {
   const { supabase, center } = await requireCenter();
   const id = z.string().uuid().parse(fd.get('id'));
+  const { data: row } = await supabase
+    .from('service_categories')
+    .select('image_url')
+    .eq('id', id)
+    .eq('center_id', center.id)
+    .single();
   await supabase.from('service_categories').delete().eq('id', id).eq('center_id', center.id);
+
+  // Se borra también su foto de Storage (si falla, queda un archivo sin uso)
+  const image = row?.image_url as string | null | undefined;
+  const prefix = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/center-media/${center.id}/`;
+  if (image && image.startsWith(prefix)) {
+    await supabase.storage.from('center-media').remove([`${center.id}/${image.slice(prefix.length)}`]);
+  }
   revalidatePath('/admin/servicios');
   refreshSite();
   revalidatePath(`/c/${center.slug}`);
