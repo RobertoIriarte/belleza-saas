@@ -31,8 +31,19 @@ export async function saveImage(input: z.infer<typeof Input>): Promise<Result> {
     if (!url.startsWith(prefix)) return { error: 'Imagen no válida' };
   }
 
+  // Imagen que estaba guardada antes: si se reemplaza o se quita, hay que borrar su archivo
+  let previousUrl: string | null = null;
+
   if (target === 'professional') {
     if (!professionalId) return { error: 'Falta el profesional' };
+    const { data: current } = await supabase
+      .from('professionals')
+      .select('photo_url')
+      .eq('id', professionalId)
+      .eq('center_id', center.id)
+      .single();
+    previousUrl = (current?.photo_url as string | null | undefined) ?? null;
+
     const { error } = await supabase
       .from('professionals')
       .update({ photo_url: url })
@@ -40,6 +51,7 @@ export async function saveImage(input: z.infer<typeof Input>): Promise<Result> {
       .eq('center_id', center.id);
     if (error) return { error: 'No se pudo guardar la foto' };
   } else {
+    previousUrl = (target === 'cover' ? center.cover_url : center.logo_url) ?? null;
     const column = target === 'cover' ? 'cover_url' : 'logo_url';
     const { error } = await supabase
       .from('centers')
@@ -53,6 +65,11 @@ export async function saveImage(input: z.infer<typeof Input>): Promise<Result> {
     }
   }
 
+  // Recién ahora, con la base ya actualizada, se borra el archivo anterior
+  if (previousUrl && previousUrl !== url) {
+    await removeStored(supabase, center.id, previousUrl);
+  }
+
   revalidatePath(`/c/${center.slug}`);
   revalidatePath('/admin/ajustes');
   revalidatePath('/admin/equipo');
@@ -64,6 +81,19 @@ export async function saveImage(input: z.infer<typeof Input>): Promise<Result> {
 
 function mediaPrefix(centerId: string) {
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/center-media/${centerId}/`;
+}
+
+type Db = Awaited<ReturnType<typeof requireCenter>>['supabase'];
+
+/**
+ * Borra de Storage el archivo al que apunta una URL pública, pero sólo si está en la
+ * carpeta del propio centro. Si falla no se interrumpe nada: lo peor es un archivo huérfano.
+ */
+async function removeStored(supabase: Db, centerId: string, url: string | null | undefined) {
+  if (!url) return;
+  const prefix = mediaPrefix(centerId);
+  if (!url.startsWith(prefix)) return;
+  await supabase.storage.from('center-media').remove([`${centerId}/${url.slice(prefix.length)}`]);
 }
 
 const GalleryAdd = z.object({ url: z.string().url().max(600) });
@@ -121,11 +151,7 @@ export async function deleteGalleryImage(input: z.infer<typeof GalleryDelete>): 
   if (error) return { error: 'No se pudo eliminar la foto' };
 
   // Borrado del archivo: si falla no importa, la foto ya no aparece en el sitio
-  const prefix = mediaPrefix(center.id);
-  const url = String(row.url);
-  if (url.startsWith(prefix)) {
-    await supabase.storage.from('center-media').remove([`${center.id}/${url.slice(prefix.length)}`]);
-  }
+  await removeStored(supabase, center.id, String(row.url));
 
   revalidatePath(`/c/${center.slug}`);
   revalidatePath('/admin/galeria');
