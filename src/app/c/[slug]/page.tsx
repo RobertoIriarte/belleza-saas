@@ -8,6 +8,7 @@ import { formatCLP } from '@/lib/types';
 import { fmtDuration, whatsappLink } from '@/lib/format';
 import { summarizeHours } from '@/lib/hours';
 import { groupServices } from '@/lib/categories';
+import { businessOf } from '@/lib/business';
 import Gallery from '@/components/Gallery';
 
 type Props = { params: Promise<{ slug: string }> };
@@ -29,6 +30,7 @@ export default async function CenterLanding({ params }: Props) {
   const { center, services, categories, professionals, hours, gallery } = bundle;
   const schedule = summarizeHours(hours);
 
+  const business = businessOf(center.business_type);
   const groups = groupServices(services, categories);
   const showHeadings = categories.length > 0;
   const reservar = `/c/${center.slug}/reservar`;
@@ -66,7 +68,7 @@ export default async function CenterLanding({ params }: Props) {
       <section className="mx-auto grid max-w-6xl gap-10 px-5 py-16 md:grid-cols-[1.2fr_1fr] md:py-24">
         <div className="flex flex-col justify-center">
           <p className="mb-4 text-sm font-semibold uppercase tracking-[.2em] text-[var(--accent)]">
-            {center.city ?? 'Centro de belleza'}
+            {business.name}{center.city ? ` · ${center.city}` : ''}
           </p>
           <h1 className="font-display text-5xl leading-[1.05] sm:text-6xl">
             {center.tagline ?? 'Tu momento de cuidarte'}
@@ -178,7 +180,7 @@ export default async function CenterLanding({ params }: Props) {
       {/* Equipo */}
       {professionals.length > 0 && (
         <section id="equipo" className="mx-auto max-w-6xl px-5 py-16">
-          <h2 className="font-display text-4xl">Nuestro equipo</h2>
+          <h2 className="font-display text-4xl">{business.team}</h2>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {professionals.map((p) => (
               <article key={p.id} className="card overflow-hidden">

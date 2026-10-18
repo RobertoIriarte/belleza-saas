@@ -13,6 +13,7 @@ export type Center = {
   timezone: string;
   accent_color: string;
   palette?: string | null;
+  business_type?: string | null;
   slot_step_min: number;
   min_notice_min: number;
   max_days_ahead: number;

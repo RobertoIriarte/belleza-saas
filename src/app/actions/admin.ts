@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { requireCenter, requireUser } from '@/lib/admin';
 import { CUSTOM_ID, PALETTES } from '@/lib/themes';
+import { BUSINESS_TYPES } from '@/lib/business';
 
 const str = (max = 200) => z.string().trim().max(max);
 const optional = (max = 200) =>
@@ -19,6 +20,7 @@ const CenterSchema = z.object({
     .trim()
     .toLowerCase()
     .regex(/^[a-z0-9-]{3,40}$/, 'La URL debe tener 3-40 caracteres: letras, números y guiones'),
+  business_type: z.string().refine((v) => BUSINESS_TYPES.some((b) => b.id === v)).default('belleza'),
   tagline: optional(120),
   description: optional(600),
   phone: optional(30),

@@ -1,4 +1,5 @@
 import type { Center } from '@/lib/types';
+import { BUSINESS_TYPES } from '@/lib/business';
 
 type V = Partial<Center>;
 
@@ -50,6 +51,15 @@ export default function CenterFields({ v = {} }: { v?: V }) {
           placeholder="studio-aurora"
           hint="Tu sitio: /c/tu-url"
         />
+      </div>
+      <div>
+        <label className="label" htmlFor="business_type">Tipo de negocio</label>
+        <select id="business_type" name="business_type" defaultValue={v.business_type ?? 'belleza'} className="input">
+          {BUSINESS_TYPES.map((b) => (
+            <option key={b.id} value={b.id}>{b.name}</option>
+          ))}
+        </select>
+        <p className="mt-1 text-xs text-[var(--muted)]">Adapta los textos de tu sitio público.</p>
       </div>
       <Field label="Frase principal" name="tagline" value={v.tagline} placeholder="Belleza que se siente" />
       <div>
