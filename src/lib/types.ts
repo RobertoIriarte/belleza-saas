@@ -16,6 +16,8 @@ export type Center = {
   min_notice_min: number;
   max_days_ahead: number;
   owner_id: string;
+  logo_url: string | null;
+  cover_url: string | null;
 };
 
 export type Service = {

@@ -8,7 +8,7 @@ Cada centro tiene su sitio público en `/c/<url>` (servicios, equipo, reservas) 
 
 ## Puesta en marcha
 
-1. **Supabase**: crea un proyecto → *SQL Editor* → pega y ejecuta `supabase/schema.sql`.
+1. **Supabase**: crea un proyecto → *SQL Editor* → pega y ejecuta `supabase/schema.sql` y luego `supabase/migrations/002_media.sql` (agrega las columnas de logo/portada y el almacenamiento de imágenes; es seguro volver a ejecutarla).
 2. En *Authentication → Providers* deja Email activo. Para probar rápido, desactiva "Confirm email".
 3. Copia `.env.example` a `.env.local` y completa las tres claves (*Project Settings → API*).
 4. ```bash

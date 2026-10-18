@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { requireCenter } from '@/lib/admin';
 import { saveProfessionalServices, saveWorkingHours, updateProfessional } from '@/app/actions/admin';
 import StatefulForm from '@/components/StatefulForm';
+import ImageUpload from '@/components/ImageUpload';
 import { WEEKDAYS, type Professional, type Service, type WorkingHour } from '@/lib/types';
 
 export const metadata = { title: 'Profesional · Panel' };
@@ -47,6 +48,18 @@ export default async function ProfesionalPage({ params }: Props) {
       {/* Datos */}
       <section className="card p-5">
         <h2 className="mb-4 font-semibold">Perfil</h2>
+        <div className="mb-6">
+          <ImageUpload
+            centerId={center.id}
+            target="professional"
+            professionalId={p.id}
+            currentUrl={p.photo_url}
+            label="Foto"
+            hint="Se muestra en la sección Nuestro equipo."
+            shape="portrait"
+            maxSide={1200}
+          />
+        </div>
         <StatefulForm action={updateProfessional}>
           <input type="hidden" name="id" value={p.id} />
           <div className="grid gap-4 sm:grid-cols-2">
@@ -62,10 +75,6 @@ export default async function ProfesionalPage({ params }: Props) {
           <div>
             <label className="label" htmlFor="bio">Presentación</label>
             <textarea id="bio" name="bio" rows={2} defaultValue={p.bio ?? ''} className="input" />
-          </div>
-          <div>
-            <label className="label" htmlFor="photo_url">URL de foto</label>
-            <input id="photo_url" name="photo_url" defaultValue={p.photo_url ?? ''} className="input" />
           </div>
         </StatefulForm>
       </section>

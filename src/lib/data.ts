@@ -1,11 +1,14 @@
 import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
+import type { HourRow } from '@/lib/hours';
 import type { Center, Professional, Service } from '@/lib/types';
 
 export type CenterBundle = {
   center: Center;
   services: Service[];
   professionals: (Professional & { serviceIds: string[] })[];
+  /** Horarios de todos los profesionales activos (para mostrar el horario de atención) */
+  hours: HourRow[];
 };
 
 /** Carga todo lo público de un centro. `cache` evita repetir consultas en la misma request. */
@@ -33,6 +36,21 @@ export const getCenterBundle = cache(async (slug: string): Promise<CenterBundle 
     supabase.from('professional_services').select('professional_id, service_id'),
   ]);
 
+  const pros = (professionals ?? []) as Professional[];
+
+  // Horarios de los profesionales activos de este centro
+  let hours: HourRow[] = [];
+  if (pros.length > 0) {
+    const { data } = await supabase
+      .from('working_hours')
+      .select('weekday, start_time, end_time')
+      .in(
+        'professional_id',
+        pros.map((p) => p.id),
+      );
+    hours = (data ?? []) as HourRow[];
+  }
+
   const byProf = new Map<string, string[]>();
   for (const l of links ?? []) {
     byProf.set(l.professional_id, [...(byProf.get(l.professional_id) ?? []), l.service_id]);
@@ -41,9 +59,10 @@ export const getCenterBundle = cache(async (slug: string): Promise<CenterBundle 
   return {
     center: center as Center,
     services: (services ?? []) as Service[],
-    professionals: ((professionals ?? []) as Professional[]).map((p) => ({
+    professionals: pros.map((p) => ({
       ...p,
       serviceIds: byProf.get(p.id) ?? [],
     })),
+    hours,
   };
 });

@@ -6,6 +6,7 @@ import type { Metadata } from 'next';
 import { getCenterBundle } from '@/lib/data';
 import { formatCLP } from '@/lib/types';
 import { fmtDuration, whatsappLink } from '@/lib/format';
+import { summarizeHours } from '@/lib/hours';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -23,7 +24,8 @@ export default async function CenterLanding({ params }: Props) {
   const { slug } = await params;
   const bundle = await getCenterBundle(slug);
   if (!bundle) notFound();
-  const { center, services, professionals } = bundle;
+  const { center, services, professionals, hours } = bundle;
+  const schedule = summarizeHours(hours);
 
   const categories = [...new Set(services.map((s) => s.category ?? 'Servicios'))];
   const reservar = `/c/${center.slug}/reservar`;
@@ -33,7 +35,18 @@ export default async function CenterLanding({ params }: Props) {
       {/* Navegación */}
       <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--paper)]/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
-          <span className="font-display text-xl font-semibold">{center.name}</span>
+          <span className="font-display flex items-center gap-3 text-xl font-semibold">
+            {center.logo_url && (
+              <Image
+                src={center.logo_url}
+                alt=""
+                width={120}
+                height={36}
+                className="h-9 w-auto rounded-md object-contain"
+              />
+            )}
+            {center.name}
+          </span>
           <nav className="hidden items-center gap-6 text-sm sm:flex">
             <a href="#servicios" className="hover:text-[var(--accent)]">Servicios</a>
             <a href="#equipo" className="hover:text-[var(--accent)]">Equipo</a>
@@ -72,17 +85,30 @@ export default async function CenterLanding({ params }: Props) {
           </div>
         </div>
         <div
-          aria-hidden
-          className="relative hidden aspect-[4/5] overflow-hidden rounded-[2rem] md:block"
+          aria-hidden={center.cover_url ? undefined : true}
+          className={`relative aspect-[4/3] overflow-hidden rounded-[2rem] md:aspect-[4/5] ${
+            center.cover_url ? '' : 'hidden md:block'
+          }`}
           style={{
             background: `radial-gradient(120% 90% at 20% 10%, color-mix(in srgb, var(--accent) 30%, white), #fdf2f8 55%, #fff7ed)`,
           }}
         >
-          <div className="absolute inset-0 grid place-items-center">
-            <span className="font-display text-[9rem] leading-none text-[var(--accent)]/25">
-              {center.name.charAt(0)}
-            </span>
-          </div>
+          {center.cover_url ? (
+            <Image
+              src={center.cover_url}
+              alt={center.name}
+              fill
+              priority
+              sizes="(min-width: 768px) 40vw, 100vw"
+              className="object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 grid place-items-center">
+              <span className="font-display text-[9rem] leading-none text-[var(--accent)]/25">
+                {center.name.charAt(0)}
+              </span>
+            </div>
+          )}
         </div>
       </section>
 
@@ -177,10 +203,23 @@ export default async function CenterLanding({ params }: Props) {
               {center.instagram && (
                 <div><dt className="text-xs uppercase tracking-widest text-white/50">Instagram</dt><dd>@{center.instagram.replace('@', '')}</dd></div>
               )}
+              {schedule.length > 0 && (
+                <div>
+                  <dt className="text-xs uppercase tracking-widest text-white/50">Horario de atención</dt>
+                  <dd className="mt-1 space-y-0.5">
+                    {schedule.map((s) => (
+                      <p key={s.days}>
+                        <span className="inline-block w-24 text-white/60">{s.days}</span>
+                        {s.text}
+                      </p>
+                    ))}
+                  </dd>
+                </div>
+              )}
             </dl>
           </div>
           <div className="flex flex-col items-start justify-center gap-4">
-            <p className="font-display text-3xl">¿Lista para tu próxima cita?</p>
+            <p className="font-display text-3xl">Reserva tu próxima cita</p>
             <Link href={reservar} className="btn btn-accent">Reservar ahora</Link>
           </div>
         </div>
