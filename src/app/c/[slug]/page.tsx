@@ -7,6 +7,7 @@ import { getCenterBundle } from '@/lib/data';
 import { formatCLP } from '@/lib/types';
 import { fmtDuration, whatsappLink } from '@/lib/format';
 import { summarizeHours } from '@/lib/hours';
+import Gallery from '@/components/Gallery';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -24,7 +25,7 @@ export default async function CenterLanding({ params }: Props) {
   const { slug } = await params;
   const bundle = await getCenterBundle(slug);
   if (!bundle) notFound();
-  const { center, services, professionals, hours } = bundle;
+  const { center, services, professionals, hours, gallery } = bundle;
   const schedule = summarizeHours(hours);
 
   const categories = [...new Set(services.map((s) => s.category ?? 'Servicios'))];
@@ -49,6 +50,9 @@ export default async function CenterLanding({ params }: Props) {
           </span>
           <nav className="hidden items-center gap-6 text-sm sm:flex">
             <a href="#servicios" className="hover:text-[var(--accent)]">Servicios</a>
+            {gallery.length > 0 && (
+              <a href="#trabajos" className="hover:text-[var(--accent)]">Trabajos</a>
+            )}
             <a href="#equipo" className="hover:text-[var(--accent)]">Equipo</a>
             <a href="#contacto" className="hover:text-[var(--accent)]">Contacto</a>
           </nav>
@@ -157,6 +161,17 @@ export default async function CenterLanding({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {/* Galería de trabajos */}
+      {gallery.length > 0 && (
+        <section id="trabajos" className="mx-auto max-w-6xl px-5 py-16">
+          <h2 className="font-display text-4xl">Nuestros trabajos</h2>
+          <p className="mt-2 text-[var(--muted)]">Una muestra de lo que hacemos.</p>
+          <div className="mt-8">
+            <Gallery items={gallery} name={center.name} />
+          </div>
+        </section>
+      )}
 
       {/* Equipo */}
       {professionals.length > 0 && (

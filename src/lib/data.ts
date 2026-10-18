@@ -1,7 +1,7 @@
 import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import type { HourRow } from '@/lib/hours';
-import type { Center, Professional, Service } from '@/lib/types';
+import { GALLERY_MAX, type Center, type GalleryItem, type Professional, type Service } from '@/lib/types';
 
 export type CenterBundle = {
   center: Center;
@@ -9,6 +9,8 @@ export type CenterBundle = {
   professionals: (Professional & { serviceIds: string[] })[];
   /** Horarios de todos los profesionales activos (para mostrar el horario de atención) */
   hours: HourRow[];
+  /** Fotos de trabajos, las más recientes primero */
+  gallery: GalleryItem[];
 };
 
 /** Carga todo lo público de un centro. `cache` evita repetir consultas en la misma request. */
@@ -18,7 +20,8 @@ export const getCenterBundle = cache(async (slug: string): Promise<CenterBundle 
   const { data: center } = await supabase.from('centers').select('*').eq('slug', slug).single();
   if (!center) return null;
 
-  const [{ data: services }, { data: professionals }, { data: links }] = await Promise.all([
+  const [{ data: services }, { data: professionals }, { data: links }, { data: galleryRows }] =
+    await Promise.all([
     supabase
       .from('services')
       .select('*')
@@ -34,6 +37,13 @@ export const getCenterBundle = cache(async (slug: string): Promise<CenterBundle 
       .order('sort_order')
       .order('name'),
     supabase.from('professional_services').select('professional_id, service_id'),
+    // Si la migración de galería aún no se ejecutó, la consulta falla y simplemente no hay fotos
+    supabase
+      .from('gallery_images')
+      .select('id, url')
+      .eq('center_id', center.id)
+      .order('created_at', { ascending: false })
+      .limit(GALLERY_MAX),
   ]);
 
   const pros = (professionals ?? []) as Professional[];
@@ -64,5 +74,6 @@ export const getCenterBundle = cache(async (slug: string): Promise<CenterBundle 
       serviceIds: byProf.get(p.id) ?? [],
     })),
     hours,
+    gallery: (galleryRows ?? []) as GalleryItem[],
   };
 });

@@ -77,6 +77,11 @@ export type Appointment = {
 
 export type Slot = { start: string; end: string; professionalId: string };
 
+/** Máximo de fotos en la galería de un centro */
+export const GALLERY_MAX = 24;
+
+export type GalleryItem = { id: string; url: string };
+
 export const WEEKDAYS = [
   'Domingo',
   'Lunes',

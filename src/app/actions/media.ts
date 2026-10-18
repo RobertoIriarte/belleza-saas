@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { requireCenter } from '@/lib/admin';
+import { GALLERY_MAX } from '@/lib/types';
 
 const Input = z.object({
   target: z.enum(['cover', 'logo', 'professional']),
@@ -56,5 +57,77 @@ export async function saveImage(input: z.infer<typeof Input>): Promise<Result> {
   revalidatePath('/admin/ajustes');
   revalidatePath('/admin/equipo');
   if (professionalId) revalidatePath(`/admin/equipo/${professionalId}`);
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------- Galería
+
+function mediaPrefix(centerId: string) {
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/center-media/${centerId}/`;
+}
+
+const GalleryAdd = z.object({ url: z.string().url().max(600) });
+
+/** Registra en la galería una foto ya subida a Storage (con límite de fotos por centro). */
+export async function addGalleryImage(input: z.infer<typeof GalleryAdd>): Promise<Result> {
+  const parsed = GalleryAdd.safeParse(input);
+  if (!parsed.success) return { error: 'Datos inválidos' };
+
+  const { supabase, center } = await requireCenter();
+  if (!parsed.data.url.startsWith(mediaPrefix(center.id))) return { error: 'Imagen no válida' };
+
+  const { count } = await supabase
+    .from('gallery_images')
+    .select('id', { count: 'exact', head: true })
+    .eq('center_id', center.id);
+  if ((count ?? 0) >= GALLERY_MAX) {
+    return { error: `La galería admite hasta ${GALLERY_MAX} fotos` };
+  }
+
+  const { error } = await supabase
+    .from('gallery_images')
+    .insert({ center_id: center.id, url: parsed.data.url });
+  if (error) {
+    return { error: 'No se pudo guardar la foto. ¿Ejecutaste la migración 003_gallery.sql?' };
+  }
+
+  revalidatePath(`/c/${center.slug}`);
+  revalidatePath('/admin/galeria');
+  return { ok: true };
+}
+
+const GalleryDelete = z.object({ id: z.string().uuid() });
+
+/** Elimina una foto de la galería y, si es posible, también el archivo de Storage. */
+export async function deleteGalleryImage(input: z.infer<typeof GalleryDelete>): Promise<Result> {
+  const parsed = GalleryDelete.safeParse(input);
+  if (!parsed.success) return { error: 'Datos inválidos' };
+
+  const { supabase, center } = await requireCenter();
+
+  const { data: row } = await supabase
+    .from('gallery_images')
+    .select('url')
+    .eq('id', parsed.data.id)
+    .eq('center_id', center.id)
+    .single();
+  if (!row) return { error: 'La foto ya no existe' };
+
+  const { error } = await supabase
+    .from('gallery_images')
+    .delete()
+    .eq('id', parsed.data.id)
+    .eq('center_id', center.id);
+  if (error) return { error: 'No se pudo eliminar la foto' };
+
+  // Borrado del archivo: si falla no importa, la foto ya no aparece en el sitio
+  const prefix = mediaPrefix(center.id);
+  const url = String(row.url);
+  if (url.startsWith(prefix)) {
+    await supabase.storage.from('center-media').remove([`${center.id}/${url.slice(prefix.length)}`]);
+  }
+
+  revalidatePath(`/c/${center.slug}`);
+  revalidatePath('/admin/galeria');
   return { ok: true };
 }

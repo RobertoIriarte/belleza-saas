@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { saveImage } from '@/app/actions/media';
+import { shrinkImage } from '@/lib/image';
 
 type Props = {
   centerId: string;
@@ -23,29 +24,6 @@ const SHAPE: Record<NonNullable<Props['shape']>, string> = {
   square: 'aspect-square w-32',
   wide: 'aspect-[16/9] w-56',
 };
-
-/** Reduce la imagen en el navegador (evita subir fotos de 10 MB del celular) y la pasa a JPEG. */
-async function shrink(file: File, maxSide: number): Promise<Blob> {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
-  const width = Math.round(bitmap.width * scale);
-  const height = Math.round(bitmap.height * scale);
-
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Tu navegador no pudo procesar la imagen');
-  ctx.drawImage(bitmap, 0, 0, width, height);
-
-  return new Promise((resolve, reject) =>
-    canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error('No se pudo procesar la imagen'))),
-      'image/jpeg',
-      0.85,
-    ),
-  );
-}
 
 export default function ImageUpload({
   centerId,
@@ -73,7 +51,7 @@ export default function ImageUpload({
 
     setBusy(true);
     try {
-      const blob = await shrink(file, maxSide);
+      const blob = await shrinkImage(file, maxSide);
 
       // Nombre único por subida: evita que el navegador muestre la imagen antigua en caché
       const path = `${centerId}/${target}${professionalId ? `-${professionalId}` : ''}-${Date.now()}.jpg`;
