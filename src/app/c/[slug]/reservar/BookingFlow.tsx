@@ -2,7 +2,8 @@
 
 import { useActionState, useEffect, useMemo, useState } from 'react';
 import { createBooking, type BookingState } from '@/app/actions/booking';
-import type { Professional, Service, Slot } from '@/lib/types';
+import type { Professional, Service, ServiceCategory, Slot } from '@/lib/types';
+import { groupServices } from '@/lib/categories';
 import { formatCLP } from '@/lib/types';
 import { fmtDateLong, fmtDuration, fmtTime } from '@/lib/format';
 
@@ -10,6 +11,7 @@ type Pro = Professional & { serviceIds: string[] };
 type Props = {
   center: { slug: string; timezone: string; maxDaysAhead: number; today: string };
   services: Service[];
+  categories: ServiceCategory[];
   professionals: Pro[];
   initialServiceId?: string;
 };
@@ -31,7 +33,8 @@ function dayChip(dateStr: string) {
   };
 }
 
-export default function BookingFlow({ center, services, professionals, initialServiceId }: Props) {
+export default function BookingFlow({ center, services, categories, professionals, initialServiceId }: Props) {
+  const groups = useMemo(() => groupServices(services, categories), [services, categories]);
   const [serviceId, setServiceId] = useState<string | null>(
     services.some((s) => s.id === initialServiceId) ? (initialServiceId as string) : null,
   );
@@ -86,24 +89,35 @@ export default function BookingFlow({ center, services, professionals, initialSe
       {/* 1 · Servicio */}
       <section>
         <StepTitle n={1} title="Elige el servicio" />
-        <div className="grid gap-3 sm:grid-cols-2">
-          {services.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => {
-                setServiceId(s.id);
-                setProId(ANY);
-              }}
-              className={`card p-4 text-left transition ${
-                serviceId === s.id ? 'border-[var(--accent)] ring-2 ring-[var(--accent)]/20' : 'hover:border-[var(--accent)]/50'
-              }`}
-            >
-              <span className="block font-semibold">{s.name}</span>
-              <span className="mt-1 block text-sm text-[var(--muted)]">
-                {fmtDuration(s.duration_min)} · {formatCLP(s.price)}
-              </span>
-            </button>
+        <div className="space-y-6">
+          {groups.map((g) => (
+            <div key={g.id ?? 'otros'}>
+              {categories.length > 0 && (
+                <h3 className="mb-3 text-xs font-semibold uppercase tracking-[.15em] text-[var(--accent)]">
+                  {g.name}
+                </h3>
+              )}
+              <div className="grid gap-3 sm:grid-cols-2">
+                {g.services.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => {
+                      setServiceId(s.id);
+                      setProId(ANY);
+                    }}
+                    className={`card p-4 text-left transition ${
+                      serviceId === s.id ? 'border-[var(--accent)] ring-2 ring-[var(--accent)]/20' : 'hover:border-[var(--accent)]/50'
+                    }`}
+                  >
+                    <span className="block font-semibold">{s.name}</span>
+                    <span className="mt-1 block text-sm text-[var(--muted)]">
+                      {fmtDuration(s.duration_min)} · {formatCLP(s.price)}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </section>

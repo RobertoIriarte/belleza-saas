@@ -76,7 +76,11 @@ export async function updateCenter(_p: FormState, fd: FormData): Promise<FormSta
 
 const ServiceSchema = z.object({
   name: str(100).min(2, 'Ingresa el nombre'),
-  category: optional(60),
+  category_id: z
+    .string()
+    .transform((v) => (v === '' ? null : v))
+    .pipe(z.string().uuid().nullable())
+    .optional(),
   description: optional(300),
   duration_min: z.coerce.number().int().min(5).max(600),
   price: z.coerce.number().int().min(0).max(100_000_000),
@@ -91,6 +95,26 @@ export async function createService(_p: FormState, fd: FormData): Promise<FormSt
   if (error) return { error: 'No se pudo crear el servicio.' };
   revalidatePath('/admin/servicios');
   return { ok: true };
+}
+
+export async function setServiceCategory(fd: FormData) {
+  const { supabase, center } = await requireCenter();
+  const id = z.string().uuid().parse(fd.get('id'));
+  const raw = String(fd.get('category_id') ?? '');
+  const categoryId = raw === '' ? null : z.string().uuid().parse(raw);
+  // La categoría debe ser de este mismo centro
+  if (categoryId) {
+    const { data } = await supabase
+      .from('service_categories')
+      .select('id')
+      .eq('id', categoryId)
+      .eq('center_id', center.id)
+      .single();
+    if (!data) return;
+  }
+  await supabase.from('services').update({ category_id: categoryId }).eq('id', id).eq('center_id', center.id);
+  revalidatePath('/admin/servicios');
+  revalidatePath(`/c/${center.slug}`);
 }
 
 export async function toggleService(fd: FormData) {
@@ -108,6 +132,88 @@ export async function deleteService(fd: FormData) {
   const { error } = await supabase.from('services').delete().eq('id', id);
   if (error) await supabase.from('services').update({ active: false }).eq('id', id);
   revalidatePath('/admin/servicios');
+}
+
+// -------------------------------------------------------------- Categorías
+
+const CategoryName = z.object({ name: str(60).min(1, 'Ingresa el nombre de la categoría') });
+
+export async function createCategory(_p: FormState, fd: FormData): Promise<FormState> {
+  const { supabase, center } = await requireCenter();
+  const parsed = CategoryName.safeParse(Object.fromEntries(fd));
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+
+  const { data: last } = await supabase
+    .from('service_categories')
+    .select('sort_order')
+    .eq('center_id', center.id)
+    .order('sort_order', { ascending: false })
+    .limit(1);
+  const next = ((last?.[0]?.sort_order as number | undefined) ?? -1) + 1;
+
+  const { error } = await supabase
+    .from('service_categories')
+    .insert({ center_id: center.id, name: parsed.data.name, sort_order: next });
+  if (error) {
+    return {
+      error:
+        error.code === '23505'
+          ? 'Ya tienes una categoría con ese nombre.'
+          : 'No se pudo crear. ¿Ejecutaste la migración 004_categories.sql en Supabase?',
+    };
+  }
+  revalidatePath('/admin/servicios');
+  revalidatePath(`/c/${center.slug}`);
+  return { ok: true };
+}
+
+export async function renameCategory(fd: FormData) {
+  const { supabase, center } = await requireCenter();
+  const id = z.string().uuid().parse(fd.get('id'));
+  const parsed = CategoryName.safeParse({ name: fd.get('name') ?? '' });
+  if (!parsed.success) return;
+  await supabase
+    .from('service_categories')
+    .update({ name: parsed.data.name })
+    .eq('id', id)
+    .eq('center_id', center.id);
+  revalidatePath('/admin/servicios');
+  revalidatePath(`/c/${center.slug}`);
+}
+
+export async function moveCategory(fd: FormData) {
+  const { supabase, center } = await requireCenter();
+  const id = z.string().uuid().parse(fd.get('id'));
+  const step = fd.get('dir') === 'up' ? -1 : 1;
+
+  const { data } = await supabase
+    .from('service_categories')
+    .select('id')
+    .eq('center_id', center.id)
+    .order('sort_order')
+    .order('name');
+  const ids = (data ?? []).map((r: { id: string }) => r.id);
+  const from = ids.indexOf(id);
+  const to = from + step;
+  if (from < 0 || to < 0 || to >= ids.length) return;
+  [ids[from], ids[to]] = [ids[to], ids[from]];
+
+  await Promise.all(
+    ids.map((cid: string, i: number) =>
+      supabase.from('service_categories').update({ sort_order: i }).eq('id', cid).eq('center_id', center.id),
+    ),
+  );
+  revalidatePath('/admin/servicios');
+  revalidatePath(`/c/${center.slug}`);
+}
+
+/** Borra la categoría; sus servicios no se borran, quedan sin categoría. */
+export async function deleteCategory(fd: FormData) {
+  const { supabase, center } = await requireCenter();
+  const id = z.string().uuid().parse(fd.get('id'));
+  await supabase.from('service_categories').delete().eq('id', id).eq('center_id', center.id);
+  revalidatePath('/admin/servicios');
+  revalidatePath(`/c/${center.slug}`);
 }
 
 // ------------------------------------------------------------ Profesionales

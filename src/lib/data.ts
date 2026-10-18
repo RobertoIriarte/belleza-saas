@@ -1,11 +1,12 @@
 import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import type { HourRow } from '@/lib/hours';
-import { GALLERY_MAX, type Center, type GalleryItem, type Professional, type Service } from '@/lib/types';
+import { GALLERY_MAX, type Center, type GalleryItem, type Professional, type Service, type ServiceCategory } from '@/lib/types';
 
 export type CenterBundle = {
   center: Center;
   services: Service[];
+  categories: ServiceCategory[];
   professionals: (Professional & { serviceIds: string[] })[];
   /** Horarios de todos los profesionales activos (para mostrar el horario de atención) */
   hours: HourRow[];
@@ -20,7 +21,7 @@ export const getCenterBundle = cache(async (slug: string): Promise<CenterBundle 
   const { data: center } = await supabase.from('centers').select('*').eq('slug', slug).single();
   if (!center) return null;
 
-  const [{ data: services }, { data: professionals }, { data: links }, { data: galleryRows }] =
+  const [{ data: services }, { data: professionals }, { data: links }, { data: galleryRows }, { data: categoryRows }] =
     await Promise.all([
     supabase
       .from('services')
@@ -44,6 +45,13 @@ export const getCenterBundle = cache(async (slug: string): Promise<CenterBundle 
       .eq('center_id', center.id)
       .order('created_at', { ascending: false })
       .limit(GALLERY_MAX),
+    // Si la migración de categorías aún no se ejecutó, simplemente no hay categorías
+    supabase
+      .from('service_categories')
+      .select('*')
+      .eq('center_id', center.id)
+      .order('sort_order')
+      .order('name'),
   ]);
 
   const pros = (professionals ?? []) as Professional[];
@@ -69,6 +77,7 @@ export const getCenterBundle = cache(async (slug: string): Promise<CenterBundle 
   return {
     center: center as Center,
     services: (services ?? []) as Service[],
+    categories: (categoryRows ?? []) as ServiceCategory[],
     professionals: pros.map((p) => ({
       ...p,
       serviceIds: byProf.get(p.id) ?? [],

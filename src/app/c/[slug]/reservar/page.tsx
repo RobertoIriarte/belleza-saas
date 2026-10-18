@@ -19,7 +19,7 @@ export default async function ReservarPage({ params, searchParams }: Props) {
   const { servicio } = await searchParams;
   const bundle = await getCenterBundle(slug);
   if (!bundle) notFound();
-  const { center, services, professionals } = bundle;
+  const { center, services, categories, professionals } = bundle;
 
   return (
     <div style={accentVars(center.accent_color)} className="min-h-screen">
@@ -46,6 +46,7 @@ export default async function ReservarPage({ params, searchParams }: Props) {
               today: todayIn(center.timezone),
             }}
             services={services}
+            categories={categories}
             professionals={professionals}
             initialServiceId={servicio}
           />

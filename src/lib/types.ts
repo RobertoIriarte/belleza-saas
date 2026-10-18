@@ -26,9 +26,17 @@ export type Service = {
   name: string;
   description: string | null;
   category: string | null;
+  category_id: string | null;
   duration_min: number;
   price: number;
   active: boolean;
+  sort_order: number;
+};
+
+export type ServiceCategory = {
+  id: string;
+  center_id: string;
+  name: string;
   sort_order: number;
 };
 

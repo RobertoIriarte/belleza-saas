@@ -7,6 +7,7 @@ import { getCenterBundle } from '@/lib/data';
 import { formatCLP } from '@/lib/types';
 import { fmtDuration, whatsappLink } from '@/lib/format';
 import { summarizeHours } from '@/lib/hours';
+import { groupServices } from '@/lib/categories';
 import Gallery from '@/components/Gallery';
 
 type Props = { params: Promise<{ slug: string }> };
@@ -25,10 +26,11 @@ export default async function CenterLanding({ params }: Props) {
   const { slug } = await params;
   const bundle = await getCenterBundle(slug);
   if (!bundle) notFound();
-  const { center, services, professionals, hours, gallery } = bundle;
+  const { center, services, categories, professionals, hours, gallery } = bundle;
   const schedule = summarizeHours(hours);
 
-  const categories = [...new Set(services.map((s) => s.category ?? 'Servicios'))];
+  const groups = groupServices(services, categories);
+  const showHeadings = categories.length > 0;
   const reservar = `/c/${center.slug}/reservar`;
 
   return (
@@ -127,15 +129,15 @@ export default async function CenterLanding({ params }: Props) {
           )}
 
           <div className="mt-10 space-y-10">
-            {categories.map((cat) => (
-              <div key={cat}>
-                <h3 className="mb-4 text-sm font-semibold uppercase tracking-[.15em] text-[var(--accent)]">
-                  {cat}
-                </h3>
+            {groups.map((g) => (
+              <div key={g.id ?? 'otros'}>
+                {showHeadings && (
+                  <h3 className="mb-4 text-sm font-semibold uppercase tracking-[.15em] text-[var(--accent)]">
+                    {g.name}
+                  </h3>
+                )}
                 <ul className="grid gap-4 md:grid-cols-2">
-                  {services
-                    .filter((s) => (s.category ?? 'Servicios') === cat)
-                    .map((s) => (
+                  {g.services.map((s) => (
                       <li key={s.id} className="card flex items-start justify-between gap-4 p-5">
                         <div>
                           <p className="font-semibold">{s.name}</p>
@@ -154,7 +156,7 @@ export default async function CenterLanding({ params }: Props) {
                           </Link>
                         </div>
                       </li>
-                    ))}
+                  ))}
                 </ul>
               </div>
             ))}
