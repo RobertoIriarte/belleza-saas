@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+:root {
+  --accent: #be185d;
+  --ink: #1f1720;
+  --paper: #fdfaf7;
+  --muted: #7a6f77;
+  --line: #eadfd8;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display { font-family: Georgia, "Times New Roman", serif; letter-spacing: -0.01em; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  border-radius: 9999px; padding: .7rem 1.4rem; font-weight: 600; font-size: .95rem;
+  transition: transform .15s ease, opacity .15s ease, background .15s ease;
+}
+.btn:active { transform: scale(.98); }
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-accent:hover { opacity: .9; }
+.btn-ghost { border: 1px solid var(--line); background: #fff; color: var(--ink); }
+.btn-ghost:hover { background: #f6efe9; }
+.input {
+  width: 100%; border: 1px solid var(--line); border-radius: .75rem; background: #fff;
+  padding: .65rem .9rem; font-size: .95rem; outline: none;
+}
+.input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.label { display: block; font-size: .8rem; font-weight: 600; color: var(--muted); margin-bottom: .3rem; }
+.card { background: #fff; border: 1px solid var(--line); border-radius: 1.25rem; }
