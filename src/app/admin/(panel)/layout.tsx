@@ -1,4 +1,4 @@
-import { accentVars } from '@/lib/style';
+import { themeVars } from '@/lib/themes';
 import Link from 'next/link';
 import { requireCenter } from '@/lib/admin';
 import { signOut } from '@/app/actions/auth';
@@ -15,7 +15,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
   const { center } = await requireCenter();
 
   return (
-    <div style={accentVars(center.accent_color)} className="min-h-screen">
+    <div style={themeVars(center)} className="min-h-screen">
       <header className="border-b border-[var(--line)] bg-white">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-5 py-3">
           <span className="font-display text-xl font-semibold">{center.name}</span>

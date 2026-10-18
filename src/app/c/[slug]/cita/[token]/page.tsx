@@ -1,4 +1,4 @@
-import { accentVars } from '@/lib/style';
+import { themeVars } from '@/lib/themes';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -22,7 +22,7 @@ export default async function CitaPage({ params }: Props) {
   const { data: a } = await db
     .from('appointments')
     .select(
-      'id, starts_at, status, customer_name, services(name, price), professionals(name), centers!inner(slug, name, timezone, address, city, whatsapp, accent_color)',
+      'id, starts_at, status, customer_name, services(name, price), professionals(name), centers!inner(*)',
     )
     .eq('manage_token', token)
     .single();
@@ -38,10 +38,8 @@ export default async function CitaPage({ params }: Props) {
   const cancelled = a.status === 'cancelled';
 
   return (
-    <main
-      className="mx-auto flex min-h-screen max-w-lg flex-col justify-center px-5 py-12"
-      style={accentVars(center.accent_color)}
-    >
+    <div className="min-h-screen" style={themeVars(center)}>
+    <main className="mx-auto flex min-h-screen max-w-lg flex-col justify-center px-5 py-12">
       <div className="card p-8">
         <div
           className={`mb-5 grid h-12 w-12 place-items-center rounded-full text-xl text-white ${
@@ -91,6 +89,7 @@ export default async function CitaPage({ params }: Props) {
         </p>
       </div>
     </main>
+    </div>
   );
 }
 

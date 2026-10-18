@@ -1,4 +1,4 @@
-import { accentVars } from '@/lib/style';
+import { themeVars } from '@/lib/themes';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
@@ -34,7 +34,7 @@ export default async function CenterLanding({ params }: Props) {
   const reservar = `/c/${center.slug}/reservar`;
 
   return (
-    <div style={accentVars(center.accent_color)}>
+    <div style={themeVars(center)}>
       {/* Navegación */}
       <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--paper)]/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
@@ -96,7 +96,7 @@ export default async function CenterLanding({ params }: Props) {
             center.cover_url ? '' : 'hidden md:block'
           }`}
           style={{
-            background: `radial-gradient(120% 90% at 20% 10%, color-mix(in srgb, var(--accent) 30%, white), #fdf2f8 55%, #fff7ed)`,
+            background: `radial-gradient(120% 90% at 20% 10%, color-mix(in srgb, var(--accent) 30%, white), var(--soft) 55%, var(--paper))`,
           }}
         >
           {center.cover_url ? (
@@ -182,7 +182,7 @@ export default async function CenterLanding({ params }: Props) {
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {professionals.map((p) => (
               <article key={p.id} className="card overflow-hidden">
-                <div className="relative aspect-[4/5] bg-gradient-to-br from-rose-100 to-amber-50">
+                <div className="relative aspect-[4/5] bg-[var(--soft)]">
                   {p.photo_url ? (
                     <Image src={p.photo_url} alt={p.name} fill className="object-cover" sizes="300px" />
                   ) : (

@@ -1,8 +1,10 @@
 import { requireCenter } from '@/lib/admin';
-import { updateCenter } from '@/app/actions/admin';
+import { saveTheme, updateCenter } from '@/app/actions/admin';
 import StatefulForm from '@/components/StatefulForm';
 import CenterFields from '@/components/CenterFields';
 import ImageUpload from '@/components/ImageUpload';
+import ThemePicker from '@/components/ThemePicker';
+import { resolvePalette } from '@/lib/themes';
 
 export const metadata = { title: 'Ajustes · Panel' };
 export const dynamic = 'force-dynamic';
@@ -38,6 +40,19 @@ export default async function AjustesPage() {
             maxSide={600}
           />
         </div>
+      </section>
+
+      <section className="card mt-6 p-6">
+        <h2 className="mb-1 font-semibold">Colores</h2>
+        <p className="mb-5 text-sm text-[var(--muted)]">
+          Elige la paleta de tu sitio público, de la página de reservas y de este panel.
+        </p>
+        <StatefulForm action={saveTheme} submitLabel="Guardar colores">
+          <ThemePicker
+            current={resolvePalette(center).id}
+            customColor={center.accent_color}
+          />
+        </StatefulForm>
       </section>
 
       <div className="card mt-6 p-6">

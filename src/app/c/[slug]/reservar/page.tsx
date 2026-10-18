@@ -1,4 +1,4 @@
-import { accentVars } from '@/lib/style';
+import { themeVars } from '@/lib/themes';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -22,7 +22,7 @@ export default async function ReservarPage({ params, searchParams }: Props) {
   const { center, services, categories, professionals } = bundle;
 
   return (
-    <div style={accentVars(center.accent_color)} className="min-h-screen">
+    <div style={themeVars(center)} className="min-h-screen">
       <header className="border-b border-[var(--line)] bg-white">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-4">
           <Link href={`/c/${center.slug}`} className="font-display text-xl font-semibold">

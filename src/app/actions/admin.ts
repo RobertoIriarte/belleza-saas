@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { requireCenter, requireUser } from '@/lib/admin';
+import { CUSTOM_ID, PALETTES } from '@/lib/themes';
 
 const str = (max = 200) => z.string().trim().max(max);
 const optional = (max = 200) =>
@@ -26,7 +27,6 @@ const CenterSchema = z.object({
   address: optional(160),
   city: optional(80),
   instagram: optional(60),
-  accent_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).default('#be185d'),
 });
 
 export type FormState = { error?: string; ok?: boolean };
@@ -69,6 +69,32 @@ export async function updateCenter(_p: FormState, fd: FormData): Promise<FormSta
   }
   revalidatePath('/admin', 'layout');
   revalidatePath(`/c/${parsed.data.slug}`);
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------- Colores
+
+const ThemeSchema = z.object({
+  palette: z.enum([...PALETTES.map((p) => p.id), CUSTOM_ID] as [string, ...string[]]),
+  accent_color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+});
+
+export async function saveTheme(_p: FormState, fd: FormData): Promise<FormState> {
+  const { supabase, center } = await requireCenter();
+  const parsed = ThemeSchema.safeParse(Object.fromEntries(fd));
+  if (!parsed.success) return { error: 'Elige una paleta válida' };
+
+  // Con una paleta predefinida se conserva el color personalizado anterior para poder volver a él
+  const update =
+    parsed.data.palette === CUSTOM_ID
+      ? { palette: parsed.data.palette, accent_color: parsed.data.accent_color }
+      : { palette: parsed.data.palette };
+  const { error } = await supabase.from('centers').update(update).eq('id', center.id);
+  if (error) {
+    return { error: 'No se pudo guardar. ¿Ejecutaste la migración 005_palette.sql en Supabase?' };
+  }
+  revalidatePath('/admin', 'layout');
+  revalidatePath(`/c/${center.slug}`);
   return { ok: true };
 }
 

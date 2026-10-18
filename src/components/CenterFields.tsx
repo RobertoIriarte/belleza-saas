@@ -64,16 +64,6 @@ export default function CenterFields({ v = {} }: { v?: V }) {
         <Field label="Dirección" name="address" value={v.address} />
         <Field label="Ciudad" name="city" value={v.city} placeholder="Santiago" />
       </div>
-      <div>
-        <label className="label" htmlFor="accent_color">Color de marca</label>
-        <input
-          id="accent_color"
-          name="accent_color"
-          type="color"
-          defaultValue={v.accent_color ?? '#be185d'}
-          className="h-11 w-24 cursor-pointer rounded-lg border border-[var(--line)] bg-white p-1"
-        />
-      </div>
     </>
   );
 }
